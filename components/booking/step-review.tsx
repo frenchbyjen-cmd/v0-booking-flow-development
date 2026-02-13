@@ -94,10 +94,15 @@ export function StepReview({
                   <Clock className="h-3 w-3" />
                   {activity.duration} min {bookedSlots[activity.id] ? `at ${bookedSlots[activity.id]}` : ""}
                 </span>
-                <span className="flex items-center gap-1">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.meetingPoint)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 underline underline-offset-2 hover:text-primary transition-colors"
+                >
                   <MapPin className="h-3 w-3" />
                   {activity.meetingPoint}
-                </span>
+                </a>
               </div>
             </div>
           ))}

@@ -2,8 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { activities, type Activity, type Formula } from "@/lib/booking-data"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Clock, MapPin } from "lucide-react"
+import { Clock, MapPin, Check } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface StepActivitiesProps {
@@ -46,30 +45,43 @@ export function StepActivities({ formula, selectedActivities, onToggle }: StepAc
           const isDisabled = !isSelected && isAtLimit
 
           return (
-            <button
+            <div
               key={activity.id}
+              role="checkbox"
+              aria-checked={isSelected}
+              aria-disabled={isDisabled}
+              tabIndex={isDisabled ? -1 : 0}
               onClick={() => {
                 if (!isDisabled || isSelected) {
                   onToggle(activity)
                 }
               }}
-              disabled={isDisabled}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && (!isDisabled || isSelected)) {
+                  e.preventDefault()
+                  onToggle(activity)
+                }
+              }}
               className={cn(
-                "flex items-start gap-4 rounded-xl border-2 p-4 md:p-5 text-left transition-all duration-200 cursor-pointer",
+                "flex items-start gap-4 rounded-xl border-2 p-4 md:p-5 text-left transition-all duration-200 cursor-pointer select-none",
                 isSelected
                   ? "border-primary bg-primary/5"
                   : "border-border bg-card hover:border-primary/30",
                 isDisabled && "opacity-40 cursor-not-allowed hover:border-border"
               )}
-              aria-pressed={isSelected}
             >
               <div className="pt-0.5">
-                <Checkbox
-                  checked={isSelected}
-                  className="h-5 w-5 pointer-events-none"
-                  tabIndex={-1}
-                  aria-hidden
-                />
+                <div
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-muted-foreground/30 bg-card"
+                  )}
+                  aria-hidden="true"
+                >
+                  {isSelected && <Check className="h-3.5 w-3.5" />}
+                </div>
               </div>
 
               <div className="flex flex-1 flex-col gap-1.5">
@@ -90,7 +102,7 @@ export function StepActivities({ formula, selectedActivities, onToggle }: StepAc
                   </span>
                 </div>
               </div>
-            </button>
+            </div>
           )
         })}
       </div>

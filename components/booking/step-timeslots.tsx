@@ -52,10 +52,16 @@ export function StepTimeslots({ selectedActivities, bookedSlots, onSlotBooked }:
                       <Clock className="h-3.5 w-3.5" />
                       {activity.duration} min
                     </span>
-                    <span className="flex items-center gap-1.5">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.meetingPoint)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 underline underline-offset-2 hover:text-primary transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <MapPin className="h-3.5 w-3.5" />
                       {activity.meetingPoint}
-                    </span>
+                    </a>
                   </div>
                 </div>
 
