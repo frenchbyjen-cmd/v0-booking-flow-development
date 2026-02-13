@@ -5,13 +5,15 @@ import { activities, type Activity } from "@/lib/booking-data"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Clock,
   MapPin,
   Check,
   CalendarDays,
-  ExternalLink,
   ArrowRight,
+  Mail,
+  Loader2,
 } from "lucide-react"
 
 const MAX_ACTIVITIES = 2
@@ -19,8 +21,14 @@ const CAL_LINK = "https://cal.com/sportswithjen-flow?redirect=false"
 
 export function DayPlanner() {
   const [selected, setSelected] = useState<Activity[]>([])
+  const [firstName, setFirstName] = useState("")
+  const [email, setEmail] = useState("")
+  const [sending, setSending] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const [emailError, setEmailError] = useState("")
 
   const isAtLimit = selected.length >= MAX_ACTIVITIES
+  const total = selected.reduce((sum, a) => sum + a.price, 0)
 
   const toggleActivity = (activity: Activity) => {
     setSelected((prev) => {
@@ -29,6 +37,52 @@ export function DayPlanner() {
       if (prev.length >= MAX_ACTIVITIES) return prev
       return [...prev, activity]
     })
+    setEmailSent(false)
+    setEmailError("")
+  }
+
+  const sendRecap = async () => {
+    setEmailError("")
+
+    if (!firstName.trim()) {
+      setEmailError("Please enter your first name.")
+      return
+    }
+    if (!email.trim() || !email.includes("@") || !email.includes(".")) {
+      setEmailError("Please enter a valid email address.")
+      return
+    }
+
+    setSending(true)
+    try {
+      const res = await fetch("/api/send-recap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          email: email.trim(),
+          activities: selected.map((a) => ({
+            name: a.name,
+            duration: a.duration,
+            price: a.price,
+            meetingPoint: a.meetingPoint,
+            meetingTime: a.meetingTime ?? "TBD",
+          })),
+          total,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error ?? "Something went wrong")
+      }
+
+      setEmailSent(true)
+    } catch (err: unknown) {
+      setEmailError(err instanceof Error ? err.message : "Failed to send recap.")
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -94,14 +148,22 @@ export function DayPlanner() {
 
                 {/* Activity info */}
                 <div className="flex flex-1 flex-col gap-1.5">
-                  <h4
-                    className={cn(
-                      "font-medium text-card-foreground",
-                      isSelected && "text-foreground"
-                    )}
-                  >
-                    {activity.name}
-                  </h4>
+                  <div className="flex items-center justify-between gap-2">
+                    <h4
+                      className={cn(
+                        "font-medium text-card-foreground",
+                        isSelected && "text-foreground"
+                      )}
+                    >
+                      {activity.name}
+                    </h4>
+                    <span className={cn(
+                      "shrink-0 text-sm font-semibold",
+                      isSelected ? "text-primary" : "text-muted-foreground"
+                    )}>
+                      {activity.price} MAD
+                    </span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5" />
@@ -164,7 +226,12 @@ export function DayPlanner() {
 
                 {/* Activity details */}
                 <div className="flex flex-1 flex-col gap-2 pb-1">
-                  <h4 className="font-medium text-foreground">{activity.name}</h4>
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="font-medium text-foreground">{activity.name}</h4>
+                    <span className="shrink-0 text-sm font-semibold text-primary">
+                      {activity.price} MAD
+                    </span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5" />
@@ -189,6 +256,82 @@ export function DayPlanner() {
                 </div>
               </div>
             ))}
+
+            {/* Total */}
+            <div className="flex items-center justify-between border-t border-border bg-secondary/40 px-4 py-3 md:px-5">
+              <span className="font-medium text-foreground">Total</span>
+              <span className="text-lg font-bold text-primary">{total} MAD</span>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Payment is made on arrival at the activity location.
+          </p>
+
+          {/* Email Recap Section */}
+          <div className="rounded-xl border-2 border-border bg-card p-4 md:p-5">
+            <h4 className="flex items-center gap-2 font-medium text-foreground">
+              <Mail className="h-4 w-4 text-primary" />
+              Get Your Booking Recap
+            </h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              We will send you a summary with the activities, prices, and meeting points.
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
+              <Input
+                type="text"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value)
+                  setEmailError("")
+                  setEmailSent(false)
+                }}
+                className="bg-background"
+              />
+              <Input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setEmailError("")
+                  setEmailSent(false)
+                }}
+                className="bg-background"
+              />
+
+              {emailError && (
+                <p className="text-sm text-destructive">{emailError}</p>
+              )}
+
+              {emailSent && (
+                <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
+                  <Check className="h-4 w-4 shrink-0" />
+                  Recap sent! Check your inbox.
+                </div>
+              )}
+
+              <Button
+                onClick={sendRecap}
+                disabled={sending}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                {sending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4" />
+                    Send Recap by Email
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* CTA to Cal.com */}

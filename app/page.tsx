@@ -33,7 +33,7 @@ export default function BookingPage() {
       <section className="bg-primary/5 border-b border-border">
         <div className="mx-auto max-w-2xl px-4 py-8 md:py-10 text-center">
           <h2 className="font-serif text-3xl md:text-4xl text-foreground text-balance">
-            Plan Your Day
+            Simple Flow
           </h2>
           <p className="mt-3 text-muted-foreground leading-relaxed max-w-lg mx-auto">
             Pick up to 2 activities for today and book your time slot. Simple, sunny, and straightforward.
