@@ -11,6 +11,7 @@ export interface Activity {
   id: string
   name: string
   duration: number
+  price: number
   calUrl: string
   meetingPoint: string
   meetingTime?: string
@@ -48,6 +49,7 @@ export const activities: Activity[] = [
     id: "move-walk-meditate",
     name: "Move, Walk & Meditate on the Beach",
     duration: 60,
+    price: 90,
     calUrl: "https://cal.com/sportswithjen-flow/move-walk-meditate?overlayCalendar=true",
     meetingPoint: "G847+PG5, Tamraght",
     meetingTime: "08:00",
@@ -56,6 +58,7 @@ export const activities: Activity[] = [
     id: "french-workshop",
     name: "French Workshop + Breakfast",
     duration: 90,
+    price: 95,
     calUrl: "https://cal.com/sportswithjen-flow/90min?overlayCalendar=true",
     meetingPoint: "G879+37, Tamraght",
   },
@@ -63,6 +66,7 @@ export const activities: Activity[] = [
     id: "multisport-beach",
     name: "Multisport on the Beach",
     duration: 120,
+    price: 80,
     calUrl: "https://cal.com/sportswithjen-flow/120?overlayCalendar=true",
     meetingPoint: "G857+W4, Tamraght",
   },
@@ -70,6 +74,7 @@ export const activities: Activity[] = [
     id: "sunset-yoga",
     name: "Sunset Yoga & Flow",
     duration: 75,
+    price: 90,
     calUrl: "https://cal.com/sportswithjen-flow/sunset-yoga-flow?overlayCalendar=true",
     meetingPoint: "G857+W4, Tamraght",
   },

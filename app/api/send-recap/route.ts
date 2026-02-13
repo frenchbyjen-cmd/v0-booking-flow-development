@@ -3,26 +3,23 @@ import { NextResponse } from "next/server"
 interface ActivityPayload {
   name: string
   duration: number
-  time: string
+  price: number
   meetingPoint: string
+  meetingTime: string
 }
 
 interface RecapPayload {
   firstName: string
   email: string
-  formula: {
-    name: string
-    price: number
-  }
   activities: ActivityPayload[]
+  total: number
 }
 
 export async function POST(request: Request) {
   try {
     const body: RecapPayload = await request.json()
 
-    // Validate required fields
-    if (!body.firstName || !body.email || !body.formula || !body.activities?.length) {
+    if (!body.firstName || !body.email || !body.activities?.length) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -36,38 +33,38 @@ export async function POST(request: Request) {
       )
     }
 
-    // Build the email content
     const activitiesText = body.activities
       .map(
         (a) =>
-          `  \u2022 ${a.name} \u2013 ${a.time}\n    Meeting point: ${a.meetingPoint}`
+          `  - ${a.name}\n    Duration: ${a.duration} min | Price: ${a.price} MAD\n    Time: ${a.meetingTime}\n    Meeting point: ${a.meetingPoint}`
       )
       .join("\n\n")
 
     const emailContent = `Hi ${body.firstName},
 
-Your Flow booking in Tamraght is confirmed!
-Here is your recap:
+Here is your Simple Flow booking recap for Tamraght!
 
-Selected Flow:
-  \u2022 ${body.formula.name}
-  \u2022 Price: ${body.formula.price} dirhams
+Your selected activities:
 
-Your activities & meeting points:
 ${activitiesText}
 
-Please arrive 5\u201310 minutes before the start time.
+---
+Total: ${body.total} MAD
+---
+
+Payment is made on arrival at the activity location (cash or card).
+Please arrive 5-10 minutes before the start time at the meeting point.
 
 If you have any questions, feel free to reply to this email.
 
 Looking forward to flowing with you!
 Jen
-Sports With Jen`
+Sports With Jen - Tamraght, Morocco`
 
     // Log the email for development/demo purposes
     console.log("=== EMAIL RECAP ===")
     console.log(`To: ${body.email}`)
-    console.log(`Subject: Your Sports With Jen \u2013 Flow Booking in Tamraght \ud83c\udf0a`)
+    console.log(`Subject: Your Simple Flow Recap - Sports With Jen`)
     console.log(`Body:\n${emailContent}`)
     console.log("===================")
 
@@ -76,7 +73,7 @@ Sports With Jen`
     // await resend.emails.send({
     //   from: 'Sports With Jen <bookings@sportswithjen.com>',
     //   to: body.email,
-    //   subject: 'Your Sports With Jen – Flow Booking in Tamraght 🌊',
+    //   subject: 'Your Simple Flow Recap - Sports With Jen',
     //   text: emailContent,
     // })
 
